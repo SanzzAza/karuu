@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Captain Sapimu - API Documentation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0f1a;--bg2:#111827;--bg3:#1a2332;--border:#1e293b;--accent:#3b82f6;--accent2:#60a5fa;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--sidebar-w:280px}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;z-index:100;transition:transform .3s}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg2);z-index:10}
+.sidebar-header h1{font-size:18px;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px}
+.sidebar-header p{font-size:11px;color:var(--text3)}
+.sidebar-search{padding:12px 16px;border-bottom:1px solid var(--border);position:sticky;top:80px;background:var(--bg2);z-index:10}
+.sidebar-search input{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none}
+.sidebar-search input:focus{border-color:var(--accent)}
+.sidebar-search input::placeholder{color:var(--text3)}
+.sidebar-stats{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px}
+.stat-badge{flex:1;text-align:center;padding:6px;background:var(--bg3);border-radius:6px}
+.stat-badge .num{font-size:16px;font-weight:700;color:var(--accent2)}
+.stat-badge .label{font-size:9px;color:var(--text3);text-transform:uppercase}
+.sidebar-nav{padding:8px 0}
+.nav-item{display:flex;align-items:center;padding:8px 16px;cursor:pointer;transition:all .15s;border-left:3px solid transparent;gap:10px}
+.nav-item:hover{background:var(--bg3)}
+.nav-item.active{background:rgba(59,130,246,.1);border-left-color:var(--accent)}
+.nav-item .nav-icon{width:28px;height:28px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--accent2)}
+.nav-item .nav-name{font-size:13px;font-weight:500;flex:1}
+.nav-item .nav-count{font-size:11px;color:var(--text3);background:var(--bg);padding:2px 6px;border-radius:10px}
+.nav-item .nav-status{font-size:9px;margin-left:4px}
+.main{margin-left:var(--sidebar-w);min-height:100vh}
+.hero{padding:60px 40px 40px;background:linear-gradient(180deg,rgba(59,130,246,.08) 0%,transparent 100%);border-bottom:1px solid var(--border)}
+.hero h1{font-size:36px;font-weight:800;margin-bottom:12px}
+.hero h1 span{background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:16px;max-width:600px;margin-bottom:24px}
+.hero-badges{display:flex;gap:12px;flex-wrap:wrap}
+.hero-badge{padding:6px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--text2)}
+.hero-badge strong{color:var(--accent2)}
+.loading-bar{position:fixed;top:0;left:var(--sidebar-w);right:0;height:3px;background:var(--bg3);z-index:200;display:none}
+.loading-bar.show{display:block}
+.loading-bar .progress{height:100%;background:linear-gradient(90deg,var(--accent),var(--purple));transition:width .3s;width:0}
+.auth-section{padding:24px 40px;background:var(--bg2);border-bottom:1px solid var(--border)}
+.auth-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:16px 20px;max-width:700px}
+.auth-box h3{font-size:14px;color:var(--yellow);margin-bottom:8px}
+.token-row{display:flex;gap:8px;margin-bottom:6px}
+.token-row input{flex:1;padding:8px 12px;background:var(--bg);border:1px solid var(--border);border-radius:6px;font-family:'Fira Code',monospace;font-size:12px;color:var(--green);outline:none}
+.token-row button{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;background:var(--accent);color:#fff}
+.token-status{font-size:11px;display:flex;align-items:center;gap:6px}
+.token-dot{width:8px;height:8px;border-radius:50%}
+.token-dot.active{background:var(--green)}
+.token-dot.inactive{background:var(--red)}
+.prefetch-status{margin-top:10px;padding:8px 12px;background:var(--bg);border-radius:6px;font-size:11px;color:var(--text3)}
+.prefetch-status.loading{color:var(--yellow)}
+.prefetch-status.done{color:var(--green)}
+.content{padding:30px 40px}
+.platform-section{margin-bottom:50px;scroll-margin-top:20px}
+.platform-header{display:flex;align-items:center;gap:16px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.platform-icon{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--purple));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff}
+.platform-header h2{font-size:24px;font-weight:700}
+.platform-header .platform-meta{font-size:12px;color:var(--text3)}
+.platform-header .platform-meta code{background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--accent2)}
+.platform-header .data-status{font-size:10px;padding:2px 8px;border-radius:10px;margin-left:8px}
+.platform-header .data-status.loaded{background:rgba(16,185,129,.2);color:var(--green)}
+.platform-header .data-status.loading{background:rgba(245,158,11,.2);color:var(--yellow)}
+.endpoint-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:10px;overflow:hidden;transition:border-color .2s}
+.endpoint-card:hover{border-color:var(--accent)}
+.endpoint-header{display:flex;align-items:center;padding:12px 16px;gap:12px;cursor:pointer;user-select:none}
+.method-badge{padding:4px 10px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace;min-width:50px;text-align:center}
+.method-GET{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.method-POST{background:rgba(59,130,246,.15);color:var(--accent2);border:1px solid rgba(59,130,246,.3)}
+.endpoint-path{font-family:'Fira Code',monospace;font-size:13px;color:var(--text);flex:1}
+.endpoint-path .param{color:var(--yellow)}
+.endpoint-desc{font-size:12px;color:var(--text3);max-width:300px;text-align:right}
+.endpoint-toggle{color:var(--text3);font-size:12px;transition:transform .2s}
+.endpoint-card.open .endpoint-toggle{transform:rotate(180deg)}
+.endpoint-detail{display:none;padding:0 16px 16px;border-top:1px solid var(--border)}
+.endpoint-card.open .endpoint-detail{display:block}
+.detail-section{margin-top:12px}
+.detail-section h4{font-size:11px;text-transform:uppercase;color:var(--text3);margin-bottom:8px}
+.param-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;padding:12px;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
+.param-item{display:flex;flex-direction:column;gap:4px}
+.param-item label{font-size:10px;color:var(--yellow);font-weight:600;text-transform:uppercase}
+.param-item label .req{color:var(--red)}
+.param-item label .opt{color:var(--text3);font-weight:400}
+.param-item input,.param-item select{padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:monospace;font-size:12px;outline:none;width:100%}
+.param-item input:focus,.param-item select:focus{border-color:var(--yellow)}
+.param-item select{cursor:pointer}
+.param-item select.loaded{border-color:var(--green)}
+.page-ctrl{display:flex;align-items:center;gap:4px}
+.page-ctrl input{width:50px;text-align:center}
+.page-ctrl button{width:26px;height:26px;border:1px solid var(--border);background:var(--bg3);color:var(--text);border-radius:4px;cursor:pointer;font-size:14px}
+.page-ctrl button:hover{background:var(--border)}
+.try-section{margin-top:12px;padding:12px;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
+.try-url{display:flex;gap:8px}
+.try-url input{flex:1;padding:8px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:monospace;font-size:12px;outline:none}
+.try-url button{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
+.btn-send{background:var(--accent);color:#fff}
+.btn-send:hover{background:var(--accent2)}
+.btn-copy{background:var(--bg3);color:var(--text2);border:1px solid var(--border)!important}
+.btn-curl{background:var(--bg3);color:var(--yellow);border:1px solid rgba(245,158,11,.3)!important}
+.response-box{margin-top:10px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:none}
+.response-header{display:flex;justify-content:space-between;padding:8px 12px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:11px;align-items:center}
+.response-status{font-weight:700}
+.response-status.ok{color:var(--green)}
+.response-status.err{color:var(--red)}
+.response-status.loading{color:var(--yellow)}
+.response-body{padding:12px;font-family:'Fira Code',monospace;font-size:11px;max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;color:var(--text2)}
+.response-actions button{background:var(--bg);border:1px solid var(--border);color:var(--text3);padding:2px 8px;border-radius:4px;cursor:pointer;font-size:10px;margin-left:4px}
+.mobile-toggle{display:none;position:fixed;top:12px;left:12px;z-index:200;width:40px;height:40px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:18px;cursor:pointer}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99}
+.overlay.show{display:block}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.main{margin-left:0}.mobile-toggle{display:flex;align-items:center;justify-content:center}.hero{padding:70px 20px 30px}.hero h1{font-size:24px}.auth-section{padding:16px 20px}.content{padding:20px}.endpoint-desc{display:none}.param-grid{grid-template-columns:1fr 1fr}.loading-bar{left:0}}
+</style>
+</head>
+<body>
+
+<div class="loading-bar" id="loadingBar"><div class="progress" id="loadingProgress"></div></div>
+<button class="mobile-toggle" onclick="toggleSidebar()">☰</button>
+<div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header"><h1>🎬 Captain Sapimu</h1><p>API Documentation v3.0</p></div>
+  <div class="sidebar-search"><input type="text" id="searchInput" placeholder="Search platform..." oninput="filterPlatforms()"></div>
+  <div class="sidebar-stats">
+    <div class="stat-badge"><div class="num" id="statPlatforms">42</div><div class="label">Platforms</div></div>
+    <div class="stat-badge"><div class="num" id="statEndpoints">0</div><div class="label">Endpoints</div></div>
+  </div>
+  <nav class="sidebar-nav" id="sidebarNav"></nav>
+</aside>
+
+<div class="main">
+  <div class="hero">
+    <h1>🎬 <span>Captain Sapimu</span> API</h1>
+    <p>42 platform short drama. IDs pre-loaded untuk instant access!</p>
+    <div class="hero-badges">
+      <div class="hero-badge"><strong id="badgePlatforms">42</strong> Platforms</div>
+      <div class="hero-badge"><strong id="badgeEndpoints">0</strong> Endpoints</div>
+      <div class="hero-badge"><strong>⚡ Instant</strong> IDs</div>
+      <div class="hero-badge"><strong>Multi-lang</strong></div>
+    </div>
+  </div>
+
+  <div class="auth-section">
+    <div class="auth-box">
+      <h3>🔐 Authentication</h3>
+      <div class="token-row">
+        <input type="text" id="tokenInput" placeholder="Paste token...">
+        <button onclick="saveToken()">💾 Save & Load IDs</button>
+      </div>
+      <div class="token-status">
+        <span class="token-dot inactive" id="tokenDot"></span>
+        <span id="tokenStatusText" style="color:var(--text3)">Token not set</span>
+      </div>
+      <div class="prefetch-status" id="prefetchStatus">Click "Save & Load IDs" to pre-fetch all drama IDs</div>
+    </div>
+  </div>
+
+  <div class="content" id="content"></div>
+</div>
+
+<script>
+const BASE="https://captain.sapimu.au";
+const TOKEN_DEFAULT="53d25de32c37b0fcd2b14a9f834050493cc044d5039b5aff3283da73a8ef761b";
+const CACHE_KEY="sapimu_cache_v3";
+const LANGS=[{c:"id",n:"Indonesian"},{c:"en",n:"English"},{c:"th",n:"Thai"},{c:"vi",n:"Vietnamese"},{c:"pt",n:"Portuguese"},{c:"es",n:"Spanish"},{c:"ja",n:"Japanese"},{c:"ko",n:"Korean"},{c:"zh",n:"Chinese"},{c:"ar",n:"Arabic"},{c:"fr",n:"French"},{c:"de",n:"German"}];
+
+// Memory cache
+let cache={ids:{},chapters:{}};
+
+// Load cache from localStorage
+function loadCache(){
+  try{
+    const stored=localStorage.getItem(CACHE_KEY);
+    if(stored){cache=JSON.parse(stored);console.log('Cache loaded:',Object.keys(cache.ids).length,'platforms');}
+  }catch(e){console.error('Cache load error:',e);}
+}
+
+// Save cache to localStorage
+function saveCache(){
+  try{localStorage.setItem(CACHE_KEY,JSON.stringify(cache));}catch(e){console.error('Cache save error:',e);}
+}
+
+// All 42 platforms (compact)
+const P={
+bilitv:{n:"BiliTV",l:"/api/v1/home",id:"id",t:"title",pa:"dramas",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/recommend",d:"Recommended",ty:"list"},
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id/episode/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+cashdrama:{n:"CashDrama",l:"/api/v1/home",id:"id",t:"name",pa:"data.list",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/blocks",d:"Blocks",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/drama/:vid",d:"Detail",ty:"detail",pr:{vid:1}},
+{m:"GET",p:"/api/v1/drama/:vid/episodes",d:"Episodes",ty:"list",pr:{vid:1}},
+{m:"GET",p:"/api/v1/play/:vid/:ep",d:"Play",ty:"video",pr:{vid:1,ep:1}}
+]},
+dotdrama:{n:"DotDrama",l:"/api/v1/dramas",id:"dcup",t:"title",pa:"dgiv.lint",ep:[
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/collections",d:"Collections",ty:"list"},
+{m:"GET",p:"/api/v1/categories",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/:id",d:"Detail",ty:"detail",pr:{id:1}}
+]},
+dramabite:{n:"DramaBite",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/foryou",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/hot",d:"Hot",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id/episode/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+dramabox:{n:"DramaBox",l:"/api/v1/foryou/1",id:"book_id",t:"name",pa:"data.list",ep:[
+{m:"GET",p:"/api/v1/foryou/:page",d:"For You",ty:"list",pr:{page:0}},
+{m:"GET",p:"/api/v1/new/:page",d:"New",ty:"list",pr:{page:0}},
+{m:"GET",p:"/api/v1/rank/:type",d:"Ranking",ty:"list",pr:{type:0}},
+{m:"GET",p:"/api/v1/search/:keyword/:page",d:"Search",ty:"list",pr:{keyword:0,page:0}},
+{m:"GET",p:"/api/v1/chapters/:bookId",d:"Chapters",ty:"list",pr:{bookId:1}},
+{m:"GET",p:"/api/v1/watch/:bookId/:index",d:"Watch",ty:"video",pr:{bookId:1,index:1}}
+]},
+dramadash:{n:"DramaDash",l:"/api/v1/home",id:"id",t:"name",pa:"data.banner",ep:[
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/tabs/:id",d:"Tab",ty:"list",pr:{id:0}},
+{m:"GET",p:"/api/v1/search/:query",d:"Search",ty:"list",pr:{query:0}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/episode/:dramaId/:eps",d:"Episode",ty:"video",pr:{dramaId:1,eps:1}}
+]},
+dramanow:{n:"DramaNow",l:"/api/v1/series",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/series",d:"Series",ty:"list",q:{id:"Series ID"}},
+{m:"GET",p:"/api/v1/video",d:"Video",ty:"video",q:{id:"Video ID"}}
+]},
+dramanova:{n:"DramaNova",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/recommend",d:"Recommended",ty:"list"},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id/episode/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+dramapops:{n:"DramaPops",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/homepage",d:"Homepage",ty:"list"},
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/trending",d:"Trending",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/popular",d:"Popular",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id/episode/:ep/video",d:"Video",ty:"video",pr:{id:1,ep:1}}
+]},
+dramarush:{n:"DramaRush",l:"/api/v1/tabs/1",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/config",d:"Config",ty:"meta"},
+{m:"GET",p:"/api/v1/ranking",d:"Ranking",ty:"list"},
+{m:"GET",p:"/api/v1/tabs/:id",d:"Tab",ty:"list",pr:{id:0}},
+{m:"GET",p:"/api/v1/search/:q",d:"Search",ty:"list",pr:{q:0}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/play/:id",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/play/:id/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+dramawave:{n:"DramaWave",l:"/api/v1/feed/popular",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/feed/:tab",d:"Feed",ty:"list",pr:{tab:0}},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/search/hot",d:"Hot keywords",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/dramas/:id/play/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+dreamshort:{n:"DreamShort",l:"/discover/sections",id:"bookId",t:"bookName",pa:"data",ep:[
+{m:"GET",p:"/discover/sections",d:"Sections",ty:"list",q:{tabId:"Tab ID"}},
+{m:"GET",p:"/search/books",d:"Search",ty:"list",q:{keyword:"Keyword"}},
+{m:"GET",p:"/book/getBookDetail",d:"Detail",ty:"detail",q:{bookId:"Book ID"}},
+{m:"GET",p:"/bookShelf/chapterList",d:"Chapters",ty:"list",q:{bookId:"Book ID"}},
+{m:"GET",p:"/book/getChapterDetail",d:"Chapter",ty:"video",q:{bookId:"Book ID",chapterId:"Chapter ID"}}
+]},
+flickreels:{n:"FlickReels",l:"/api/v1/for-you",id:"playlet_id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/for-you",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/hot-rank",d:"Hot",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/navigation",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/v1/category/:navId",d:"Category",ty:"list",pr:{navId:0}},
+{m:"GET",p:"/api/v1/play/:playletId",d:"Detail",ty:"detail",pr:{playletId:1}},
+{m:"GET",p:"/api/v1/chapters/:playletId",d:"Chapters",ty:"list",pr:{playletId:1}},
+{m:"GET",p:"/api/v1/stream/:playletId/:chapterNum",d:"Stream",ty:"video",pr:{playletId:1,chapterNum:1}}
+]},
+flickshort:{n:"FlickShort",l:"/api/v1/home",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/recommend",d:"Recommended",ty:"list"},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id/episode/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+flextv:{n:"FlexTV",l:"/api/v1/tabs/popular",id:"id",t:"name",pa:"data.list",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/tabs",d:"Tabs",ty:"list"},
+{m:"GET",p:"/api/v1/tabs/:name",d:"Tab content",ty:"list",pr:{name:0}},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/series/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/series/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/play/:series_id/:section_id",d:"Play",ty:"video",pr:{series_id:1,section_id:1}}
+]},
+freereels:{n:"FreeReels",l:"/api/v1/popular",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/foryou",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/popular",d:"Popular",ty:"list"},
+{m:"GET",p:"/api/v1/new",d:"New",ty:"list"},
+{m:"GET",p:"/api/v1/female",d:"Female",ty:"list"},
+{m:"GET",p:"/api/v1/male",d:"Male",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/dramas/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/dramas/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/dramas/:id/play/:ep",d:"Play",ty:"video",pr:{id:1,ep:1}}
+]},
+fundrama:{n:"FunDrama",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id/episode/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+goodshort:{n:"GoodShort",l:"/api/v1/home",id:"bookId",t:"bookName",pa:"data.list",ep:[
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/book/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/chapters/:bookId",d:"Chapters",ty:"list",pr:{bookId:1}},
+{m:"GET",p:"/api/v1/play/:bookId/:chapterId",d:"Play",ty:"video",pr:{bookId:1,chapterId:1}},
+{m:"GET",p:"/api/v1/unlock/:bookId",d:"Unlock all",ty:"action",pr:{bookId:1}}
+]},
+hishort:{n:"HiShort",l:"/api/v1/home",id:"id",t:"title",pa:"data.popular",ep:[
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/episode/:slug",d:"Episode",ty:"video",pr:{slug:1}}
+]},
+idrama:{n:"iDrama",l:"/api/v1/popular",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/popular",d:"Popular",ty:"list"},
+{m:"GET",p:"/api/v1/latest",d:"Latest",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/genres",d:"Genres",ty:"list"},
+{m:"GET",p:"/api/v1/genre/:id",d:"Genre",ty:"list",pr:{id:0}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"POST",p:"/api/v1/unlock/:dramaId/:start/:end",d:"Unlock",ty:"action",pr:{dramaId:1,start:0,end:0}}
+]},
+kalostv:{n:"KalosTV",l:"/api/v1/home",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/tabs",d:"Tabs",ty:"list"},
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/foryou",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/video/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/video/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/video/:id/episode/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}},
+{m:"GET",p:"/api/v1/rank",d:"Ranking",ty:"list"},
+{m:"GET",p:"/api/v1/categories",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/v1/tag/:id",d:"Tag",ty:"list",pr:{id:0}}
+]},
+melolo:{n:"Melolo",l:"/api/v1/bookmall",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/bookmall",d:"Bookmall",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/series",d:"Series",ty:"detail",q:{id:"Series ID"}},
+{m:"GET",p:"/api/v1/video",d:"Video",ty:"video",q:{id:"Video ID"}},
+{m:"GET",p:"/api/v1/batch/videos",d:"Batch videos",ty:"video"}
+]},
+meloshort:{n:"MeloShort",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/discover",d:"Discover",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/top",d:"Top",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/dramas/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/dramas/:id/episodes/:chapter",d:"Episode",ty:"video",pr:{id:1,chapter:1}}
+]},
+microdrama:{n:"MicroDrama",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/dramas/:id",d:"Detail",ty:"detail",pr:{id:1}}
+]},
+minutedrama:{n:"MinuteDrama",l:"/api/v1/popular",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/popular",d:"Popular",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/videos/:id",d:"Detail",ty:"detail",pr:{id:1}}
+]},
+mydrama:{n:"MyDrama",l:"/api/v1/series",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/tags",d:"Tags",ty:"list"},
+{m:"GET",p:"/api/v1/series",d:"Series",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/series/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/series/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/video/:seriesId/:position",d:"Video",ty:"video",pr:{seriesId:1,position:1}}
+]},
+netshort:{n:"NetShort",l:"/api/v1/feed/1",id:"id",t:"name",pa:"data.list",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/feed/:page",d:"Feed",ty:"list",pr:{page:0}},
+{m:"GET",p:"/api/v1/explore/:page",d:"Explore",ty:"list",pr:{page:0}},
+{m:"GET",p:"/api/v1/new/:page",d:"New",ty:"list",pr:{page:0}},
+{m:"GET",p:"/api/v1/search/:keyword/:page",d:"Search",ty:"list",pr:{keyword:0,page:0}},
+{m:"GET",p:"/api/v1/categories",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/v1/detail/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/episodes/:id",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/episode/:id/:episodeNo",d:"Episode",ty:"video",pr:{id:1,episodeNo:1}}
+]},
+radreels:{n:"RadReels",l:"/api/v1/home",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/foryou",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/ranking",d:"Ranking",ty:"list"},
+{m:"GET",p:"/api/v1/tab/:id",d:"Tab",ty:"list",pr:{id:0}},
+{m:"GET",p:"/api/v1/search/:query",d:"Search",ty:"list",pr:{query:0}},
+{m:"GET",p:"/api/v1/drama/:keyword",d:"Detail",ty:"detail",pr:{keyword:1}},
+{m:"GET",p:"/api/v1/episodes/:fakeId",d:"Episodes",ty:"list",pr:{fakeId:1}},
+{m:"GET",p:"/api/v1/video/:videoFakeId/:episodicDramaId",d:"Video",ty:"video",pr:{videoFakeId:1,episodicDramaId:1}}
+]},
+rapidtv:{n:"RapidTV",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/dramas/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/dramas/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}}
+]},
+reelife:{n:"Reelife",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/dramas",d:"Dramas",ty:"list"},
+{m:"GET",p:"/api/v1/foryou",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/dramas/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/dramas/:id/chapters",d:"Chapters",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/dramas/:bookId/episodes/:chapterId",d:"Episode",ty:"video",pr:{bookId:1,chapterId:1}}
+]},
+reelshort:{n:"ReelShort",l:"/api/v1/foryou",id:"id",t:"name",pa:"data.hall_list",ep:[
+{m:"GET",p:"/api/v1/foryou",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/new",d:"New",ty:"list"},
+{m:"GET",p:"/api/v1/completed",d:"Completed",ty:"list"},
+{m:"GET",p:"/api/v1/romance",d:"Romance",ty:"list"},
+{m:"GET",p:"/api/v1/drama",d:"Drama",ty:"list"},
+{m:"GET",p:"/api/v1/leaderboard",d:"Leaderboard",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/feed/:tabId",d:"Feed",ty:"list",pr:{tabId:0}},
+{m:"GET",p:"/api/v1/book/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/book/:id/chapters",d:"Chapters",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/v1/book/:id/chapter/:chapterId/video",d:"Video",ty:"video",pr:{id:1,chapterId:1}}
+]},
+shorten:{n:"Shorten",l:"/api/v1/explore",id:"slug",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/editors",d:"Editors",ty:"list"},
+{m:"GET",p:"/api/v1/exclusive",d:"Exclusive",ty:"list"},
+{m:"GET",p:"/api/v1/dubbed",d:"Dubbed",ty:"list"},
+{m:"GET",p:"/api/v1/releases",d:"Releases",ty:"list"},
+{m:"GET",p:"/api/v1/categories",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/v1/explore",d:"Explore",ty:"list"},
+{m:"GET",p:"/api/v1/series/:slug",d:"Series",ty:"detail",pr:{slug:1}}
+]},
+shortbox:{n:"ShortBox",l:"/api/list",id:"id",t:"name",pa:"data.list",ep:[
+{m:"GET",p:"/api/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/categories",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/list",d:"List",ty:"list",q:{sort_type:"Sort"}},
+{m:"GET",p:"/api/new-list",d:"New",ty:"list"},
+{m:"GET",p:"/api/hot-search",d:"Hot",ty:"list"},
+{m:"GET",p:"/api/search",d:"Search",ty:"list",q:{keyword:"Keyword"}},
+{m:"GET",p:"/api/detail/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/episodes/:id",d:"Episodes",ty:"list",pr:{id:1}}
+]},
+shortmax:{n:"ShortMax",l:"/api/v1/home",id:"code",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/foryou",d:"For You",ty:"list"},
+{m:"GET",p:"/api/v1/feed/recommend",d:"Recommended",ty:"list"},
+{m:"GET",p:"/api/v1/feed/new",d:"New",ty:"list"},
+{m:"GET",p:"/api/v1/feed/ranked",d:"Ranked",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/detail/:code",d:"Detail",ty:"detail",pr:{code:1}},
+{m:"GET",p:"/api/v1/play/:code",d:"Play",ty:"video",pr:{code:1}}
+]},
+shortsky:{n:"ShortSky",l:"/api/home",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/recommend",d:"Recommended",ty:"list"},
+{m:"GET",p:"/api/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/drama/:id/episode/:ep",d:"Episode",ty:"video",pr:{id:1,ep:1}}
+]},
+shotshort:{n:"ShotShort",l:"/api/popular",id:"book_id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/popular",d:"Popular",ty:"list"},
+{m:"GET",p:"/api/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/category/list",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/category",d:"Category",ty:"list",q:{name:"Name"}},
+{m:"GET",p:"/api/book/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/book/:id/episodes",d:"Episodes",ty:"list",pr:{id:1}},
+{m:"GET",p:"/api/book/:bookId/chapter/:chapterId",d:"Chapter",ty:"video",pr:{bookId:1,chapterId:1}}
+]},
+snackshort:{n:"SnackShort",l:"/api/v1/home",id:"bookId",t:"bookName",pa:"data.data",ep:[
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/tabs",d:"Tabs",ty:"list"},
+{m:"GET",p:"/api/v1/browsing",d:"Browse",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/book/:bookId",d:"Detail",ty:"detail",pr:{bookId:1}},
+{m:"GET",p:"/api/v1/book/:bookId/chapters",d:"Chapters",ty:"list",pr:{bookId:1}},
+{m:"GET",p:"/api/v1/book/:bookId/episode/:chapterId",d:"Episode",ty:"video",pr:{bookId:1,chapterId:1}}
+]},
+sodareels:{n:"SodaReels",l:"/api/v1/home",id:"id",t:"title",pa:"data.dinsur.lconne",ep:[
+{m:"GET",p:"/api/v1/home",d:"Home",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/category",d:"Categories",ty:"list"},
+{m:"GET",p:"/api/v1/info/:id",d:"Info",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:id",d:"Drama",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/episodes",d:"Episodes",ty:"list",q:{id:"Drama ID"}}
+]},
+stardusttv:{n:"StardustTV",l:"/api/v1/homepage",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/homepage",d:"Homepage",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/video/:slug/:id",d:"Detail",ty:"detail",pr:{slug:1,id:1}},
+{m:"GET",p:"/api/v1/video/:slug/:id/episode/:episode",d:"Episode",ty:"video",pr:{slug:1,id:1,episode:1}}
+]},
+starshort:{n:"StarShort",l:"/api/v1/dramas",id:"id",t:"title",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/dramas",d:"Popular",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/new",d:"New",ty:"list"},
+{m:"GET",p:"/api/v1/dramas/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/dramas/:dramaId",d:"Detail",ty:"detail",pr:{dramaId:1}},
+{m:"GET",p:"/api/v1/dramas/:dramaId/episodes",d:"Episodes",ty:"list",pr:{dramaId:1}},
+{m:"GET",p:"/api/v1/dramas/:dramaId/episodes/:epNum",d:"Episode",ty:"video",pr:{dramaId:1,epNum:1}}
+]},
+velolo:{n:"Velolo",l:"/hot",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/hot",d:"Hot",ty:"list"},
+{m:"GET",p:"/new",d:"New",ty:"list"},
+{m:"GET",p:"/labels",d:"Labels",ty:"list"},
+{m:"GET",p:"/dramas",d:"Dramas",ty:"list",q:{keyword:"Search",labelId:"Label"}},
+{m:"GET",p:"/detail/:id",d:"Detail",ty:"detail",pr:{id:1}}
+]},
+vigloo:{n:"Vigloo",l:"/api/v1/tabs",id:"id",t:"name",pa:"data",ep:[
+{m:"GET",p:"/api/v1/languages",d:"Languages",ty:"meta"},
+{m:"GET",p:"/api/v1/tabs",d:"Tabs",ty:"list"},
+{m:"GET",p:"/api/v1/tabs/:id",d:"Tab",ty:"list",pr:{id:0}},
+{m:"GET",p:"/api/v1/browse",d:"Browse",ty:"list"},
+{m:"GET",p:"/api/v1/search",d:"Search",ty:"list",q:{q:"Keyword"}},
+{m:"GET",p:"/api/v1/rank",d:"Ranking",ty:"list"},
+{m:"GET",p:"/api/v1/genres",d:"Genres",ty:"list"},
+{m:"GET",p:"/api/v1/drama/:id",d:"Detail",ty:"detail",pr:{id:1}},
+{m:"GET",p:"/api/v1/drama/:programId/season/:seasonId/episodes",d:"Episodes",ty:"list",pr:{programId:1,seasonId:1}},
+{m:"GET",p:"/api/v1/play",d:"Play",ty:"video",q:{id:"Video ID"}}
+]}
+};
+
+// ============================================
+// TOKEN & PRE-FETCH
+// ============================================
+const getToken=()=>document.getElementById('tokenInput').value||localStorage.getItem('sapimu_token')||'';
+
+function saveToken(){
+  const t=document.getElementById('tokenInput').value.trim();
+  if(!t)return alert('Enter token!');
+  localStorage.setItem('sapimu_token',t);
+  document.getElementById('tokenDot').className='token-dot active';
+  document.getElementById('tokenStatusText').textContent='Active';
+  document.getElementById('tokenStatusText').style.color='var(--green)';
+  // Start pre-fetch
+  prefetchAll();
+}
+
+function loadToken(){
+  const s=localStorage.getItem('sapimu_token')||TOKEN_DEFAULT;
+  document.getElementById('tokenInput').value=s;
+  if(s){
+    document.getElementById('tokenDot').className='token-dot active';
+    document.getElementById('tokenStatusText').textContent='Active';
+    document.getElementById('tokenStatusText').style.color='var(--green)';
+    localStorage.setItem('sapimu_token',s);
+  }
+}
+
+// Pre-fetch ALL platform IDs in parallel
+async function prefetchAll(){
+  const token=getToken();
+  if(!token)return;
+  
+  const keys=Object.keys(P);
+  const total=keys.length;
+  let done=0;
+  
+  document.getElementById('loadingBar').classList.add('show');
+  document.getElementById('prefetchStatus').className='prefetch-status loading';
+  document.getElementById('prefetchStatus').textContent=`Loading 0/${total} platforms...`;
+  
+  // Fetch in batches of 6 (parallel)
+  const batchSize=6;
+  for(let i=0;i<keys.length;i+=batchSize){
+    const batch=keys.slice(i,i+batchSize);
+    await Promise.all(batch.map(async k=>{
+      try{
+        await fetchPlatformIds(k);
+      }catch(e){console.error(k,e);}
+      done++;
+      const pct=Math.round((done/total)*100);
+      document.getElementById('loadingProgress').style.width=pct+'%';
+      document.getElementById('prefetchStatus').textContent=`Loading ${done}/${total} platforms...`;
+      // Update nav item
+      const nav=document.querySelector(`.nav-item[data-key="${k}"]`);
+      if(nav&&cache.ids[k]?.length){
+        nav.querySelector('.nav-status')?.remove();
+        const span=document.createElement('span');
+        span.className='nav-status';
+        span.textContent='✓';
+        span.style.color='var(--green)';
+        nav.appendChild(span);
+      }
+    }));
+  }
+  
+  document.getElementById('loadingBar').classList.remove('show');
+  document.getElementById('prefetchStatus').className='prefetch-status done';
+  document.getElementById('prefetchStatus').textContent=`✓ All ${total} platforms loaded! (${Object.values(cache.ids).reduce((a,b)=>a+b.length,0)} IDs cached)`;
+  
+  saveCache();
+  populateAllDropdowns();
+}
+
+// Fetch IDs for one platform
+async function fetchPlatformIds(k){
+  const pl=P[k];
+  if(!pl.l)return[];
+  
+  // Return cached if exists
+  if(cache.ids[k]?.length)return cache.ids[k];
+  
+  const token=getToken();
+  try{
+    const r=await fetch(`${BASE}/${k}${pl.l}`,{headers:{Authorization:`Bearer ${token}`}});
+    if(!r.ok)return[];
+    const j=await r.json();
+    
+    // Extract data
+    let d=j;
+    if(pl.pa)for(const x of pl.pa.split('.'))d=d?.[x];
+    if(!Array.isArray(d))d=d?.list||d?.dramas||d?.items||d?.hall_list||Object.values(d||{})[0]||[];
+    if(!Array.isArray(d))d=[];
+    
+    // Map to id/title
+    const items=d.slice(0,50).map(i=>({
+      id:String(i[pl.id]||i.id||i.book_id||i.bookId||i.code||i.playlet_id||i.dcup||''),
+      t:(i[pl.t]||i.title||i.name||i.bookName||'Unknown').substring(0,40)
+    })).filter(x=>x.id);
+    
+    cache.ids[k]=items;
+    return items;
+  }catch(e){
+    console.error(`Fetch ${k} error:`,e);
+    return[];
+  }
+}
+
+// Populate all dropdowns from cache
+function populateAllDropdowns(){
+  Object.keys(P).forEach(k=>{
+    const items=cache.ids[k]||[];
+    if(!items.length)return;
+    
+    P[k].ep.forEach((ep,i)=>{
+      const prs=extractParams(ep.p);
+      prs.forEach(pr=>{
+        if(ep.pr?.[pr]===1){ // ID type param
+          const sel=document.getElementById(`sel-${k}-${i}-${pr}`);
+          if(sel&&!sel.classList.contains('loaded')){
+            sel.innerHTML='<option value="">-- Select ('+items.length+') --</option>'+
+              items.map(d=>`<option value="${d.id}">${d.id} - ${d.t}</option>`).join('');
+            sel.classList.add('loaded');
+          }
+        }
+      });
+    });
+  });
+}
+
+// ============================================
+// HELPER FUNCTIONS
+// ============================================
+const extractParams=(p)=>(p.match(/:(\w+)/g)||[]).map(m=>m.slice(1));
+
+function buildUrl(k,i){
+  const ep=P[k].ep[i];
+  let p=ep.p;
+  
+  // Path params
+  extractParams(p).forEach(pr=>{
+    const sel=document.getElementById(`sel-${k}-${i}-${pr}`);
+    const inp=document.getElementById(`inp-${k}-${i}-${pr}`);
+    const v=sel?.value||inp?.value?.trim()||'';
+    if(v)p=p.replace(`:${pr}`,encodeURIComponent(v));
+  });
+  
+  // Query params
+  const qs=[];
+  if(ep.ty==='list'){
+    const page=document.getElementById(`q-${k}-${i}-page`)?.value;
+    const limit=document.getElementById(`q-${k}-${i}-limit`)?.value;
+    const lang=document.getElementById(`q-${k}-${i}-lang`)?.value;
+    if(page)qs.push(`page=${page}`);
+    if(limit)qs.push(`limit=${limit}`);
+    if(lang)qs.push(`lang=${lang}`);
+  }
+  if(ep.q){
+    Object.keys(ep.q).forEach(qk=>{
+      if(['page','limit','lang'].includes(qk))return;
+      const v=document.getElementById(`q-${k}-${i}-${qk}`)?.value?.trim();
+      if(v)qs.push(`${qk}=${encodeURIComponent(v)}`);
+    });
+  }
+  
+  if(qs.length)p+='?'+qs.join('&');
+  return `${BASE}/${k}${p}`;
+}
+
+function updateUrl(k,i){
+  const el=document.getElementById(`url-${k}-${i}`);
+  if(el)el.value=buildUrl(k,i);
+}
+
+function changePage(k,i,delta){
+  const inp=document.getElementById(`q-${k}-${i}-page`);
+  if(!inp)return;
+  let v=parseInt(inp.value)||1;
+  v+=delta;if(v<1)v=1;
+  inp.value=v;
+  updateUrl(k,i);
+}
+
+// ============================================
+// RENDER
+// ============================================
+let totalEp=0;Object.values(P).forEach(p=>totalEp+=p.ep.length);
+
+function renderSidebar(){
+  const nav=document.getElementById('sidebarNav');
+  const sorted=Object.entries(P).sort((a,b)=>a[1].n.localeCompare(b[1].n));
+  nav.innerHTML=sorted.map(([k,p])=>`<div class="nav-item" data-key="${k}" onclick="scrollTo('${k}')"><div class="nav-icon">${p.n.slice(0,2).toUpperCase()}</div><div class="nav-name">${p.n}</div><div class="nav-count">${p.ep.length}</div></div>`).join('');
+}
+
+function hl(p){return p.replace(/:(\w+)/g,'<span class="param">:$1</span>');}
+
+function renderContent(){
+  const content=document.getElementById('content');
+  const sorted=Object.entries(P).sort((a,b)=>a[1].n.localeCompare(b[1].n));
+  
+  let html=sorted.map(([k,pl])=>{
+    const eps=pl.ep.map((ep,i)=>{
+      const prs=extractParams(ep.p);
+      const hasP=prs.length>0;
+      const hasQ=ep.q&&Object.keys(ep.q).length>0;
+      const isList=ep.ty==='list';
+      
+      let paramHtml='<div class="param-grid">';
+      
+      // Default pagination for list
+      if(isList){
+        paramHtml+=`
+          <div class="param-item">
+            <label>page <span class="opt">(opt)</span></label>
+            <div class="page-ctrl">
+              <button onclick="changePage('${k}',${i},-1)">−</button>
+              <input type="number" id="q-${k}-${i}-page" value="1" min="1" oninput="updateUrl('${k}',${i})">
+              <button onclick="changePage('${k}',${i},1)">+</button>
+            </div>
+          </div>
+          <div class="param-item">
+            <label>limit <span class="opt">(opt)</span></label>
+            <input type="number" id="q-${k}-${i}-limit" value="20" oninput="updateUrl('${k}',${i})">
+          </div>
+          <div class="param-item">
+            <label>lang <span class="opt">(opt)</span></label>
+            <select id="q-${k}-${i}-lang" onchange="updateUrl('${k}',${i})">
+              <option value="">Auto</option>
+              ${LANGS.map(l=>`<option value="${l.c}"${l.c==='id'?' selected':''}>${l.n}</option>`).join('')}
+            </select>
+          </div>`;
+      }
+      
+      // Path params
+      if(hasP){
+        prs.forEach(pr=>{
+          const prType=ep.pr?.[pr];
+          if(prType===0){ // Manual input (page, keyword, etc)
+            paramHtml+=`
+              <div class="param-item">
+                <label>${pr} <span class="req">*</span></label>
+                <input type="text" id="inp-${k}-${i}-${pr}" placeholder="${pr}" oninput="updateUrl('${k}',${i})" value="${pr==='page'?'1':''}">
+              </div>`;
+          }else{ // ID type - dropdown
+            paramHtml+=`
+              <div class="param-item">
+                <label>${pr} <span class="req">*</span></label>
+                <select id="sel-${k}-${i}-${pr}" onchange="updateUrl('${k}',${i})">
+                  <option value="">Loading...</option>
+                </select>
+                <input type="text" id="inp-${k}-${i}-${pr}" placeholder="Or type" oninput="updateUrl('${k}',${i})" style="margin-top:4px;font-size:10px">
+              </div>`;
+          }
+        });
+      }
+      
+      // Custom query params
+      if(hasQ){
+        Object.entries(ep.q).forEach(([qk,qd])=>{
+          if(isList&&['page','limit','lang'].includes(qk))return;
+          paramHtml+=`
+            <div class="param-item">
+              <label>${qk} <span class="opt">(query)</span></label>
+              <input type="text" id="q-${k}-${i}-${qk}" placeholder="${qd}" oninput="updateUrl('${k}',${i})">
+            </div>`;
+        });
+      }
+      
+      paramHtml+='</div>';
+      
+      return `<div class="endpoint-card" id="${k}-${i}">
+        <div class="endpoint-header" onclick="toggle('${k}-${i}')">
+          <span class="method-badge method-${ep.m}">${ep.m}</span>
+          <span class="endpoint-path">${hl(ep.p)}</span>
+          <span class="endpoint-desc">${ep.d}</span>
+          <span class="endpoint-toggle">▼</span>
+        </div>
+        <div class="endpoint-detail">
+          <div class="detail-section">
+            <h4>Parameters</h4>
+            ${paramHtml}
+          </div>
+          <div class="try-section">
+            <div class="try-url">
+              <input type="text" value="${BASE}/${k}${ep.p}" id="url-${k}-${i}" readonly>
+              <button class="btn-copy" onclick="copy('url-${k}-${i}')">📋</button>
+              <button class="btn-curl" onclick="copyCurl('${k}',${i})">cURL</button>
+              <button class="btn-send" onclick="send('${k}',${i})">▶ Send</button>
+            </div>
+            <div class="response-box" id="resp-${k}-${i}">
+              <div class="response-header">
+                <span class="response-status" id="rs-${k}-${i}"></span>
+                <div class="response-actions"><span id="rz-${k}-${i}"></span><button onclick="copy('rb-${k}-${i}')">📋</button><button onclick="document.getElementById('resp-${k}-${i}').style.display='none'">✕</button></div>
+              </div>
+              <pre class="response-body" id="rb-${k}-${i}"></pre>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    
+    return `<div class="platform-section" id="p-${k}">
+      <div class="platform-header">
+        <div class="platform-icon">${pl.n.slice(0,2).toUpperCase()}</div>
+        <div><h2>${pl.n}</h2><div class="platform-meta">Base: <code>/${k}</code> · ${pl.ep.length} endpoints</div></div>
+      </div>
+      ${eps}
+    </div>`;
+  }).join('');
+  
+  content.innerHTML=html;
+}
+
+// ============================================
+// INTERACTIONS
+// ============================================
+const toggle=(id)=>document.getElementById(id).classList.toggle('open');
+const scrollTo=(k)=>{document.getElementById('p-'+k)?.scrollIntoView({behavior:'smooth'});document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));document.querySelector(`.nav-item[data-key="${k}"]`)?.classList.add('active');if(window.innerWidth<768)toggleSidebar();};
+const filterPlatforms=()=>{const q=document.getElementById('searchInput').value.toLowerCase();document.querySelectorAll('.nav-item').forEach(n=>{n.style.display=n.querySelector('.nav-name').textContent.toLowerCase().includes(q)?'flex':'none';});document.querySelectorAll('.platform-section').forEach(s=>{s.style.display=s.querySelector('h2').textContent.toLowerCase().includes(q)?'block':'none';});};
+const toggleSidebar=()=>{document.getElementById('sidebar').classList.toggle('open');document.getElementById('overlay').classList.toggle('show');};
+const copy=(id)=>navigator.clipboard.writeText(document.getElementById(id).value||document.getElementById(id).textContent);
+const copyCurl=(k,i)=>{const url=buildUrl(k,i);navigator.clipboard.writeText(`curl "${url}" -H "Authorization: Bearer ${getToken()}"`);alert('Copied!');};
+
+async function send(k,i){
+  const t=getToken();if(!t)return alert('Set token first!');
+  
+  const url=buildUrl(k,i);
+  const ep=P[k].ep[i];
+  const box=document.getElementById(`resp-${k}-${i}`);
+  const st=document.getElementById(`rs-${k}-${i}`);
+  const sz=document.getElementById(`rz-${k}-${i}`);
+  const bd=document.getElementById(`rb-${k}-${i}`);
+  
+  box.style.display='block';st.textContent='⏳ Loading...';st.className='response-status loading';bd.textContent='';
+  
+  try{
+    const r=await fetch(url,{method:ep.m,headers:{Authorization:`Bearer ${t}`}});
+    const txt=await r.text();
+    st.textContent=`${r.status} ${r.statusText}`;st.className=`response-status ${r.ok?'ok':'err'}`;
+    sz.textContent=`${(txt.length/1024).toFixed(1)}KB`;
+    try{bd.textContent=JSON.stringify(JSON.parse(txt),null,2);}catch{bd.textContent=txt;}
+  }catch(e){
+    st.textContent='❌ Error';st.className='response-status err';
+    bd.textContent=`CORS Error. Use cURL:\n\ncurl "${url}" -H "Authorization: Bearer ${t}"`;
+  }
+}
+
+// ============================================
+// INIT
+// ============================================
+document.getElementById('statPlatforms').textContent=Object.keys(P).length;
+document.getElementById('statEndpoints').textContent=totalEp;
+document.getElementById('badgePlatforms').textContent=Object.keys(P).length;
+document.getElementById('badgeEndpoints').textContent=totalEp;
+
+loadCache();
+renderSidebar();
+renderContent();
+loadToken();
+
+// Auto pre-fetch if cached data exists
+if(Object.keys(cache.ids).length>0){
+  populateAllDropdowns();
+  document.getElementById('prefetchStatus').className='prefetch-status done';
+  document.getElementById('prefetchStatus').textContent=`✓ Cache loaded! (${Object.values(cache.ids).reduce((a,b)=>a+b.length,0)} IDs)`;
+}else if(getToken()){
+  // Auto pre-fetch on load
+  setTimeout(prefetchAll,500);
+}
+</script>
+</body>
+</html>
